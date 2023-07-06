@@ -25,6 +25,7 @@ const getFilterProducts = (
   categoriesValue,
 ) => {
   let filteredProducts = [...productsForFilter];
+  const normalizedSerchValue = searchValue.toLowerCase();
 
   if (query) {
     filteredProducts = filteredProducts.filter(product => (
@@ -34,11 +35,11 @@ const getFilterProducts = (
 
   if (searchValue) {
     filteredProducts = filteredProducts.filter(product => (
-      product.name.includes(searchValue)
+      product.name.toLowerCase().includes(normalizedSerchValue)
     ));
   }
 
-  if (!categoriesValue.length) {
+  if (categoriesValue.length) {
     filteredProducts = filteredProducts.filter(product => (
       categoriesValue.includes(product.category.title)
     ));
@@ -50,7 +51,7 @@ const getFilterProducts = (
 export const App = () => {
   const [query, setQuery] = useState('');
   const [searchValue, setSearchValue] = useState('');
-  const [categoriesValue, setCategoriesValue] = useState(['']);
+  const [categoriesValue, setCategoriesValue] = useState([]);
 
   const visibleProducts = getFilterProducts(
     products,
@@ -104,7 +105,10 @@ export const App = () => {
                   type="text"
                   className="input"
                   placeholder="Search"
-                  onChange={event => setSearchValue(event.target.value)}
+                  value={searchValue}
+                  onChange={event => (
+                    setSearchValue(event.target.value)
+                  )}
                 />
 
                 <span className="icon is-left">
@@ -131,8 +135,10 @@ export const App = () => {
               <a
                 href="#/"
                 data-cy="AllCategories"
-                className="button is-success mr-6 is-outlined"
-                onClick={() => setCategoriesValue([''])}
+                className={cn('button is-success mr-6', {
+                  'is-outlined': categoriesValue.length,
+                })}
+                onClick={() => setCategoriesValue([])}
               >
                 All
               </a>
@@ -140,11 +146,15 @@ export const App = () => {
               {categoriesFromServer.map(category => (
                 <a
                   data-cy="Category"
-                  className="button mr-2 my-1 is-info"
+                  className={cn('button mr-2 my-1', {
+                    'is-info': categoriesValue.includes(category.title),
+                  })}
                   href="#/"
                   key={category.id}
                   onClick={() => (
-                    setCategoriesValue([...categoriesValue, category.id])
+                    categoriesValue.includes(categoriesFromServer.title)
+                      ? setCategoriesValue([...categoriesValue, category.title])
+                      : setCategoriesValue([...categoriesValue, category.title])
                   )}
                 >
                   {category.title}
@@ -160,6 +170,7 @@ export const App = () => {
                 onClick={() => {
                   setQuery('');
                   setSearchValue('');
+                  setCategoriesValue([]);
                 }}
               >
                 Reset all filters
